@@ -2,30 +2,62 @@ services:
   opencloud:
     image: opencloudeu/opencloud-rolling:latest
     container_name: ${CONTAINER_NAME}
+    user: ${OC_CONTAINER_UID_GID:-1000:1000}
     restart: always
     networks:
       - 1panel-network
     ports:
-      - "${PANEL_APP_PORT_HTTP}:8080"
-    volumes:
-      - "${OC_CONFIG_PATH}:/etc/opencloud"
-      - "${OC_DATA_PATH}:/var/lib/opencloud"
-    environment:
-      - OC_LOG_LEVEL=info
-      - PROXY_TLS=false
-      - OC_INSECURE=${INSECURE:-true}
-      - IDM_ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD}
-      - IDM_CREATE_DEMO_USERS=false
-      - PROXY_ENABLE_BASIC_AUTH=true
-      - OC_URL=http://localhost:${PANEL_APP_PORT_HTTP}
-      - TZ=${TIME_ZONE}
+      - "${PANEL_APP_PORT_HTTP}:9200"
     entrypoint:
       - /bin/sh
     command:
       - "-c"
       - "opencloud init || true; opencloud server"
+    environment:
+      OC_ADD_RUN_SERVICES: ${START_ADDITIONAL_SERVICES}
+      OC_URL: ${OC_URL:-http://localhost:${PANEL_APP_PORT_HTTP}}
+      OC_LOG_LEVEL: ${LOG_LEVEL:-info}
+      OC_LOG_COLOR: "${LOG_PRETTY:-false}"
+      OC_LOG_PRETTY: "${LOG_PRETTY:-false}"
+      PROXY_HTTP_ADDR: "0.0.0.0:9200"
+      PROXY_TLS: "false"
+      OC_INSECURE: "${INSECURE:-false}"
+      PROXY_ENABLE_BASIC_AUTH: "${PROXY_ENABLE_BASIC_AUTH:-false}"
+      IDM_CREATE_DEMO_USERS: "${DEMO_USERS:-false}"
+      IDM_ADMIN_PASSWORD: "${INITIAL_ADMIN_PASSWORD}"
+      NOTIFICATIONS_SMTP_HOST: "${SMTP_HOST}"
+      NOTIFICATIONS_SMTP_PORT: "${SMTP_PORT}"
+      NOTIFICATIONS_SMTP_SENDER: "${SMTP_SENDER:-OpenCloud Notifications <notifications@cloud.opencloud.test>}"
+      NOTIFICATIONS_SMTP_USERNAME: "${SMTP_USERNAME}"
+      NOTIFICATIONS_SMTP_PASSWORD: "${SMTP_PASSWORD}"
+      NOTIFICATIONS_SMTP_INSECURE: "${SMTP_INSECURE:-false}"
+      NOTIFICATIONS_SMTP_AUTHENTICATION: "${SMTP_AUTHENTICATION}"
+      NOTIFICATIONS_SMTP_ENCRYPTION: "${SMTP_TRANSPORT_ENCRYPTION:-none}"
+      FRONTEND_ARCHIVER_MAX_SIZE: "10000000000"
+      FRONTEND_CHECK_FOR_UPDATES: "${CHECK_FOR_UPDATES:-true}"
+      PROXY_CSP_CONFIG_FILE_LOCATION: /etc/opencloud/csp.yaml
+      OC_PASSWORD_POLICY_BANNED_PASSWORDS_LIST: banned-password-list.txt
+      OC_SHARING_PUBLIC_SHARE_MUST_HAVE_PASSWORD: "${OC_SHARING_PUBLIC_SHARE_MUST_HAVE_PASSWORD:-true}"
+      OC_SHARING_PUBLIC_WRITEABLE_SHARE_MUST_HAVE_PASSWORD: "${OC_SHARING_PUBLIC_WRITEABLE_SHARE_MUST_HAVE_PASSWORD:-false}"
+      OC_PASSWORD_POLICY_DISABLED: "${OC_PASSWORD_POLICY_DISABLED:-false}"
+      OC_PASSWORD_POLICY_MIN_CHARACTERS: "${OC_PASSWORD_POLICY_MIN_CHARACTERS:-8}"
+      OC_PASSWORD_POLICY_MIN_LOWERCASE_CHARACTERS: "${OC_PASSWORD_POLICY_MIN_LOWERCASE_CHARACTERS:-1}"
+      OC_PASSWORD_POLICY_MIN_UPPERCASE_CHARACTERS: "${OC_PASSWORD_POLICY_MIN_UPPERCASE_CHARACTERS:-1}"
+      OC_PASSWORD_POLICY_MIN_DIGITS: "${OC_PASSWORD_POLICY_MIN_DIGITS:-1}"
+      OC_PASSWORD_POLICY_MIN_SPECIAL_CHARACTERS: "${OC_PASSWORD_POLICY_MIN_SPECIAL_CHARACTERS:-1}"
+      OC_DEFAULT_LANGUAGE: ${DEFAULT_LANGUAGE:-en}
+      TZ: ${TIME_ZONE:-Asia/Shanghai}
+    volumes:
+      - ${OC_CONFIG_DIR:-./data/config}/csp.yaml:/etc/opencloud/csp.yaml
+      - ${OC_CONFIG_DIR:-./data/config}/banned-password-list.txt:/etc/opencloud/banned-password-list.txt
+      - ${OC_CONFIG_DIR:-opencloud-config}:/etc/opencloud
+      - ${OC_DATA_DIR:-opencloud-data}:/var/lib/opencloud
     labels:
       createdBy: "Apps"
+
+volumes:
+  opencloud-config:
+  opencloud-data:
 
 networks:
   1panel-network:

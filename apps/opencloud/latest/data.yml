@@ -33,7 +33,7 @@ additionalProperties:
         pt-br: 'Domínio (ex: cloud.example.com)'
       required: false
       type: text
-    - default: "admin"
+    - default: ""
       edit: true
       envKey: INITIAL_ADMIN_PASSWORD
       labelEn: Admin Password
@@ -51,9 +51,30 @@ additionalProperties:
       required: true
       rule: paramComplexity
       type: password
+    - default: "true"
+      edit: true
+      envKey: INSECURE
+      labelEn: Skip certificate validation (for self-signed certs)
+      labelZh: 跳过证书验证 (用于自签名证书)
+      label:
+        en: 'Skip certificate validation (for self-signed certs)'
+        zh: '跳过证书验证 (用于自签名证书)'
+        zh-Hant: '跳過證書驗證 (用於自簽名證書)'
+        ja: '証明書検証をスキップ (自己署名証明書用)'
+        ko: '인증서 검증 건너뛰기 (자체 서명 인증서용)'
+        ru: 'Пропустить проверку сертификата (для самоподписанных)'
+        ms: 'Langkahkan pengesahan sijil (untuk sijil sendiri)'
+        pt-br: 'Pular validação de certificado (para certificados autoassinados)'
+      required: true
+      type: select
+      values:
+        - label: "Yes"
+          value: "true"
+        - label: "No"
+          value: "false"
     - default: ./data/config
       edit: true
-      envKey: OC_CONFIG_PATH
+      envKey: OC_CONFIG_DIR
       labelEn: Config folder path
       labelZh: 配置文件夹路径
       label:
@@ -69,7 +90,7 @@ additionalProperties:
       type: text
     - default: ./data/storage
       edit: true
-      envKey: OC_DATA_PATH
+      envKey: OC_DATA_DIR
       labelEn: Data folder path
       labelZh: 数据文件夹路径
       label:
@@ -81,6 +102,22 @@ additionalProperties:
         ru: 'Путь к папке данных'
         ms: 'Laluan folder data'
         pt-br: 'Caminho da pasta de dados'
+      required: true
+      type: text
+    - default: "1000:1000"
+      edit: true
+      envKey: OC_CONTAINER_UID_GID
+      labelEn: Container UID:GID
+      labelZh: 容器用户UID:GID
+      label:
+        en: 'Container UID:GID'
+        zh: '容器用户UID:GID'
+        zh-Hant: '容器用戶UID:GID'
+        ja: 'コンテナ UID:GID'
+        ko: '컨테이너 UID:GID'
+        ru: 'UID:GID контейнера'
+        ms: 'UID:GID bekas'
+        pt-br: 'UID:GID do contêiner'
       required: true
       type: text
     - default: Asia/Shanghai
@@ -99,21 +136,58 @@ additionalProperties:
         pt-br: 'Fuso horário'
       required: true
       type: text
-    - default: "true"
+    - default: "en"
       edit: true
-      envKey: INSECURE
-      labelEn: Skip certificate validation (for self-signed certs)
-      labelZh: 跳过证书验证 (用于自签名证书)
+      envKey: DEFAULT_LANGUAGE
+      labelEn: Default Language (ISO 639-1, e.g. en, de, zh)
+      labelZh: 默认语言 (ISO 639-1, 如 en, de, zh)
       label:
-        en: 'Skip certificate validation (for self-signed certs)'
-        zh: '跳过证书验证 (用于自签名证书)'
-        zh-Hant: '跳過證書驗證 (用於自簽名證書)'
-        ja: '証明書検証をスキップ (自己署名証明書用)'
-        ko: '인증서 검증 건너뛰기 (자체 서명 인증서용)'
-        ru: 'Пропустить проверку сертификата (для самоподписанных)'
-        ms: 'Langkahkan pengesahan sijil (untuk sijil sendiri)'
-        pt-br: 'Pular validação de certificado (para certificados autoassinados)'
-      required: true
+        en: 'Default Language (ISO 639-1, e.g. en, de, zh)'
+        zh: '默认语言 (ISO 639-1, 如 en, de, zh)'
+        zh-Hant: '預設語言 (ISO 639-1, 如 en, de, zh)'
+        ja: 'デフォルト言語 (ISO 639-1, 例: en, de, zh)'
+        ko: '기본 언어 (ISO 639-1, 예: en, de, zh)'
+        ru: 'Язык по умолчанию (ISO 639-1, например en, de, zh)'
+        ms: 'Bahasa lalai (ISO 639-1, contoh: en, de, zh)'
+        pt-br: 'Idioma padrão (ISO 639-1, ex: en, de, zh)'
+      required: false
+      type: text
+    - default: "false"
+      edit: true
+      envKey: PROXY_ENABLE_BASIC_AUTH
+      labelEn: Enable Basic Auth (for WebDAV clients)
+      labelZh: 启用Basic Auth (供WebDAV客户端使用)
+      label:
+        en: 'Enable Basic Auth (for WebDAV clients)'
+        zh: '启用Basic Auth (供WebDAV客户端使用)'
+        zh-Hant: '啟用Basic Auth (供WebDAV客戶端使用)'
+        ja: 'Basic認証を有効化 (WebDAVクライアント用)'
+        ko: 'Basic Auth 활성화 (WebDAV 클라이언트용)'
+        ru: 'Включить Basic Auth (для WebDAV клиентов)'
+        ms: 'Dayakan Basic Auth (untuk klien WebDAV)'
+        pt-br: 'Habilitar Basic Auth (para clientes WebDAV)'
+      required: false
+      type: select
+      values:
+        - label: "Yes"
+          value: "true"
+        - label: "No"
+          value: "false"
+    - default: "false"
+      edit: true
+      envKey: LOG_PRETTY
+      labelEn: Pretty Logging (human-readable)
+      labelZh: 美化日志输出 (人类可读)
+      label:
+        en: 'Pretty Logging (human-readable)'
+        zh: '美化日志输出 (人类可读)'
+        zh-Hant: '美化日誌輸出 (人類可讀)'
+        ja: 'ログを見やすく出力 (人間可読)'
+        ko: '로그 예쁘게 출력 (사람이 읽기 쉽게)'
+        ru: 'Красивый вывод логов (человекочитаемый)'
+        ms: 'Log cantik (boleh dibaca manusia)'
+        pt-br: 'Logs formatados (legíveis por humanos)'
+      required: false
       type: select
       values:
         - label: "Yes"
