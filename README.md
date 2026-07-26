@@ -1,89 +1,72 @@
 # 1Panel 本地应用商店
 
-这是一个为 1Panel v2.0+ 设计的本地应用商店仓库。
+适配 [1Panel](https://1panel.cn) 应用商店 `2.0` 的本地应用（Local Apps）仓库。收录官方商店与常见第三方仓库（如 [okxlin/appstore](https://github.com/okxlin/appstore)）尚未纳入、但我们需要的开源项目。
 
-## 简介
-
-1Panel 从 2.0 版本开始支持本地应用功能，允许用户创建和使用自定义的应用模板。本仓库旨在提供一个开源的本地应用集合，补充官方应用商店中缺失的应用。
-
-## 参考来源
-
-- [okxlin/appstore](https://github.com/okxlin/appstore) - 第三方应用商店，提供了丰富的应用模板
-- [1Panel 官方应用商店](https://github.com/1Panel-dev/appstore) - 1Panel 官方应用商店
-
-## 为什么创建这个仓库？
-
-虽然 [okxlin/appstore](https://github.com/okxlin/appstore) 提供了大量优质应用，但某些开源项目并未被纳入。例如：
-- [OpenCloud](https://github.com/opencloud-eu/opencloud) - 开源文件管理与协作平台
-
-本仓库的目标是：
-1. 补充官方和第三方商店中缺失的开源应用
-2. 提供高质量、易用的应用模板
-3. 促进社区贡献
-
-## 仓库结构
-
-```
-apps/
-├── app-name/
-│   ├── data.yml          # 应用元数据（名称、描述、分类等）
-│   ├── logo.png          # 应用图标
-│   ├── README.md         # 应用说明文档
-│   └── latest/           # 版本目录（可有多个版本）
-│       ├── data.yml      # 表单字段配置
-│       ├── docker-compose.yml  # Docker Compose 配置
-│       ├── .env.sample   # 环境变量示例
-│       └── init/         # 初始化配置文件
-│           ├── csp.yaml
-│           └── ...
-```
+导入后可在 1Panel「应用商店 → 本地应用」中直接安装，也可以进入应用版本目录用 `docker compose` 手动运行。
 
 ## 应用列表
 
-| 应用 | 描述 | 状态 |
+| 应用 | 说明 | 版本 |
 | --- | --- | --- |
-| [OpenCloud](apps/opencloud/) | 开源文件管理与协作平台 | ✅ 可用 |
+| [OpenCloud](apps/opencloud/README.md) | 开源文件管理、共享与协作平台（oCIS 欧洲社区分支） | 7.2.2 / latest |
 
-## 如何使用
+## 使用方式
 
-### 方法一：添加到 1Panel
+以下命令假设 1Panel 安装在默认的 `/opt` 路径，其他路径请自行调整。
 
-1. 在 1Panel 中进入「应用商店」→「本地应用」
-2. 点击「设置」→「添加应用商店」
-3. 填写仓库地址：`https://github.com/your-username/1panel-appstore.git`
-4. 保存后即可在本地应用中看到可用的应用
+### 方式一：git clone
 
-### 方法二：手动部署
+在 1Panel 计划任务（Shell 脚本）或服务器终端中执行：
 
-1. 克隆本仓库到本地
-2. 复制需要的应用目录到 1Panel 的应用目录
-3. 在 1Panel 中刷新本地应用列表
+```shell
+git clone https://github.com/zhengkh/1panel-appstore /opt/1panel/resource/apps/local/1panel-appstore-tmp
+cp -rf /opt/1panel/resource/apps/local/1panel-appstore-tmp/apps/* /opt/1panel/resource/apps/local/
+rm -rf /opt/1panel/resource/apps/local/1panel-appstore-tmp
+```
 
-## 如何贡献
+然后在 1Panel「应用商店 → 本地应用」中点击**更新应用列表**。
 
-欢迎贡献新的应用模板！
+### 方式二：手动 docker compose
 
-### 贡献步骤
+```shell
+cd /opt/1panel/resource/apps/local/opencloud/latest
+cp .env.sample .env
+# 编辑 .env, 至少设置 OC_URL 和 INITIAL_ADMIN_PASSWORD
+bash scripts/init.sh
+docker compose up -d
+```
 
-1. Fork 本仓库
-2. 创建新的应用目录（参考现有应用结构）
-3. 填写完整的元数据和文档
-4. 测试应用是否可以正常部署
-5. 提交 Pull Request
+## 目录规范
 
-### 应用模板要求
+遵循 1Panel v2 本地应用规范：
 
-- `data.yml` 必须包含完整的元数据（多语言支持）
-- `docker-compose.yml` 必须使用 1Panel 的变量格式
-- 提供清晰的 `README.md` 文档
-- 应用图标建议使用 PNG 格式，尺寸不小于 128x128
+```
+apps/
+└── <应用key>/
+    ├── data.yml              # 应用声明: 名称、描述(多语言)、标签、官网等
+    ├── logo.png              # 应用图标 (180x180)
+    ├── README.md             # 应用说明文档
+    └── <版本号>/              # 版本目录 (不要以 v 开头), 及 latest/
+        ├── data.yml          # 安装表单 formFields 定义
+        ├── docker-compose.yml
+        ├── .env.sample       # 手动部署用的环境变量样例
+        ├── init/             # 需要挂载进容器的初始配置文件
+        └── scripts/          # 生命周期钩子: init.sh / upgrade.sh / uninstall.sh
+```
 
-## 许可证
+## 贡献应用
 
-本仓库采用 [MIT License](LICENSE) 开源许可证。
+1. 优先参考项目**官方** docker compose 配置进行适配；
+2. `docker-compose.yml` 必须加入 `1panel-network`（external）、`container_name: ${CONTAINER_NAME}`、`labels: createdBy: "Apps"`；
+3. 端口类表单变量使用 `PANEL_APP_PORT_HTTP` 等约定 envKey，并设置 `rule: paramPort`；
+4. 表单 `label` 提供多语言（至少 zh / en）；
+5. 提交前建议用 [okxlin/1panel-app-adapter](https://github.com/okxlin/1panel-app-adapter) 校验目录结构与 data.yml。
 
-## 相关链接
+## 致谢
 
-- [1Panel 官网](https://1panel.pro/)
-- [1Panel GitHub](https://github.com/1Panel-dev/panel)
-- [okxlin/appstore](https://github.com/okxlin/appstore)
+- [1Panel](https://github.com/1Panel-dev/1Panel)
+- [okxlin/appstore](https://github.com/okxlin/appstore) — 目录规范与适配方式参考
+
+## License
+
+[MIT](LICENSE)

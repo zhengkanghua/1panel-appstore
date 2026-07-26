@@ -1,0 +1,14 @@
+# 上游同步记录 —— 升级时据此判断上游配置是否有变更, 流程见 docs/UPGRADE.md
+# 每次完成同步后, 更新 last_synced_commit 和 last_synced_date
+repo: https://github.com/opencloud-eu/opencloud-compose
+last_synced_commit: 8d2d89f283faa410bc9ed9f63e8247f6518d5c43
+last_synced_date: 2026-07-26
+# 生产发布线镜像; 上游 compose 默认用的是滚动线 opencloudeu/opencloud-rolling, 本仓库有意只跟生产线
+image: opencloudeu/opencloud
+# 升级时需要关注 diff 的上游文件
+watched_files:
+  - docker-compose.yml
+  - .env.example
+  - external-proxy/opencloud.yml
+  - config/opencloud/csp.yaml
+  - config/opencloud/banned-password-list.txt

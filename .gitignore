@@ -12,7 +12,10 @@ Thumbs.db
 *.tmp
 *.bak
 
-# Docker volumes (local data)
-/data/
-appstore-ref/
-opencloud-compose-ref/
+# Local research / reference clones
+.research/
+
+# Docker runtime data (never commit installed app data)
+**/data/config/
+**/data/storage/
+**/.env

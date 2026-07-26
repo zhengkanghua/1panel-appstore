@@ -1,6 +1,6 @@
 name: OpenCloud
 tags:
-  - 建站
+  - 云存储
 title: OpenCloud - 开源文件管理与协作平台
 description: OpenCloud - 开源文件管理与协作平台
 additionalProperties:
@@ -16,7 +16,7 @@ additionalProperties:
     ms: OpenCloud ialah platform sumber terbuka untuk pengurusan fail, perkongsian dan kolaborasi. Mudah dan berdaulat.
     pt-br: OpenCloud é a plataforma de código aberto para gerenciamento de arquivos, compartilhamento e colaboração. Simples e soberana.
   tags:
-    - Website
+    - Storage
   shortDescZh: 开源文件管理与协作平台
   shortDescEn: Open source platform for file management, sharing and collaboration
   type: website
