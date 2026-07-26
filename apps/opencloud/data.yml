@@ -1,0 +1,31 @@
+name: OpenCloud
+tags:
+  - 建站
+title: OpenCloud - 开源文件管理与协作平台
+description: OpenCloud - 开源文件管理与协作平台
+additionalProperties:
+  key: opencloud
+  name: OpenCloud
+  description:
+    en: OpenCloud is the open source platform for file management, sharing and collaboration. Simple and sovereign.
+    zh: OpenCloud 是一个开源的文件管理、共享和协作平台，简洁且自主可控。
+    zh-Hant: OpenCloud 是一個開源的檔案管理、共享和協作平台，簡潔且自主可控。
+    ja: OpenCloud は、ファイル管理、共有、コラボレーションのためのオープンソースプラットフォームです。シンプルで主権的なものです。
+    ko: OpenCloud는 파일 관리, 공유 및 협업을 위한 오픈 소스 플랫폼입니다. 간단하고 자주적인 것입니다.
+    ru: OpenCloud — открытая платформа для управления файлами, обмена и совместной работы. Простая и независимая.
+    ms: OpenCloud ialah platform sumber terbuka untuk pengurusan fail, perkongsian dan kolaborasi. Mudah dan berdaulat.
+    pt-br: OpenCloud é a plataforma de código aberto para gerenciamento de arquivos, compartilhamento e colaboração. Simples e soberana.
+  tags:
+    - Website
+  shortDescZh: 开源文件管理与协作平台
+  shortDescEn: Open source platform for file management, sharing and collaboration
+  type: website
+  crossVersionUpdate: true
+  limit: 0
+  recommend: 0
+  website: https://opencloud.eu
+  github: https://github.com/opencloud-eu/opencloud
+  document: https://docs.opencloud.eu
+  architectures:
+    - amd64
+    - arm64

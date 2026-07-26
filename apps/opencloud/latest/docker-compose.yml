@@ -1,0 +1,32 @@
+services:
+  opencloud:
+    image: opencloudeu/opencloud-rolling:latest
+    container_name: ${CONTAINER_NAME}
+    restart: always
+    networks:
+      - 1panel-network
+    ports:
+      - "${PANEL_APP_PORT_HTTP}:8080"
+    volumes:
+      - "${OC_CONFIG_PATH}:/etc/opencloud"
+      - "${OC_DATA_PATH}:/var/lib/opencloud"
+    environment:
+      - OC_LOG_LEVEL=info
+      - PROXY_TLS=false
+      - OC_INSECURE=${INSECURE:-true}
+      - IDM_ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD}
+      - IDM_CREATE_DEMO_USERS=false
+      - PROXY_ENABLE_BASIC_AUTH=true
+      - OC_URL=http://localhost:${PANEL_APP_PORT_HTTP}
+      - TZ=${TIME_ZONE}
+    entrypoint:
+      - /bin/sh
+    command:
+      - "-c"
+      - "opencloud init || true; opencloud server"
+    labels:
+      createdBy: "Apps"
+
+networks:
+  1panel-network:
+    external: true
