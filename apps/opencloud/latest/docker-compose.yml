@@ -48,8 +48,8 @@ services:
       OC_DEFAULT_LANGUAGE: ${DEFAULT_LANGUAGE:-en}
       TZ: ${TIME_ZONE:-Asia/Shanghai}
     volumes:
-      - ${OC_CONFIG_DIR:-./data/config}/csp.yaml:/etc/opencloud/csp.yaml
-      - ${OC_CONFIG_DIR:-./data/config}/banned-password-list.txt:/etc/opencloud/banned-password-list.txt
+      - ./init/csp.yaml:/etc/opencloud/csp.yaml
+      - ./init/banned-password-list.txt:/etc/opencloud/banned-password-list.txt
       - ${OC_CONFIG_DIR:-opencloud-config}:/etc/opencloud
       - ${OC_DATA_DIR:-opencloud-data}:/var/lib/opencloud
     labels:

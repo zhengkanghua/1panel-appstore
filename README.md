@@ -32,7 +32,10 @@ apps/
 │   └── latest/           # 版本目录（可有多个版本）
 │       ├── data.yml      # 表单字段配置
 │       ├── docker-compose.yml  # Docker Compose 配置
-│       └── .env.sample   # 环境变量示例
+│       ├── .env.sample   # 环境变量示例
+│       └── init/         # 初始化配置文件
+│           ├── csp.yaml
+│           └── ...
 ```
 
 ## 应用列表
