@@ -10,26 +10,26 @@
 | --- | --- | --- |
 | [OpenCloud](apps/opencloud/README.md) | 开源文件管理、共享与协作平台（oCIS 欧洲社区分支） | 7.2.2 / latest |
 
-## 使用方式
+## 使用方式（标准流程）
 
-以下命令假设 1Panel 安装在默认的 `/opt` 路径，其他路径请自行调整。
-
-### 方式一：git clone
-
-在 1Panel 计划任务（Shell 脚本）或服务器终端中执行：
+在 1Panel「计划任务」中新建一个 **Shell 脚本** 任务（如每天执行一次），内容如下，实现仓库到本地应用目录的定时同步。以下命令假设 1Panel 安装在默认的 `/opt` 路径，其他路径请自行调整：
 
 ```shell
-git clone https://github.com/zhengkh/1panel-appstore /opt/1panel/resource/apps/local/1panel-appstore-tmp
+# 先清理可能残留的临时目录, 避免上次 clone 中断后任务永久失败
+rm -rf /opt/1panel/resource/apps/local/1panel-appstore-tmp
+git clone --depth 1 https://github.com/zhengkh/1panel-appstore /opt/1panel/resource/apps/local/1panel-appstore-tmp || exit 1
 cp -rf /opt/1panel/resource/apps/local/1panel-appstore-tmp/apps/* /opt/1panel/resource/apps/local/
 rm -rf /opt/1panel/resource/apps/local/1panel-appstore-tmp
 ```
 
-然后在 1Panel「应用商店 → 本地应用」中点击**更新应用列表**。
+首次可手动执行一次该任务，然后在 1Panel「应用商店 → 本地应用」中点击**更新应用列表**，即可看到本仓库的应用，直接点安装。安装时 1Panel 会自动：按表单生成 `.env` → 执行 `scripts/init.sh`（初始化数据目录与权限）→ `docker compose up`，无需登录服务器手动操作。
 
-### 方式二：手动 docker compose
+### 调试用：脱离 1Panel 手动 docker compose
+
+仅用于开发调试或不使用 1Panel 的场景（`.env.sample` 即为此准备）：
 
 ```shell
-cd /opt/1panel/resource/apps/local/opencloud/latest
+cd apps/opencloud/latest
 cp .env.sample .env
 # 编辑 .env, 至少设置 OC_URL 和 INITIAL_ADMIN_PASSWORD
 bash scripts/init.sh
