@@ -12,14 +12,53 @@
 
 ## 使用方式（标准流程）
 
-在 1Panel「计划任务」中新建一个 **Shell 脚本** 任务（如每天执行一次），内容如下，实现仓库到本地应用目录的定时同步。以下命令假设 1Panel 安装在默认的 `/opt` 路径，其他路径请自行调整：
+在 1Panel「计划任务」中新建一个 **Shell 脚本** 任务（如每天执行一次），内容如下，实现仓库到本地应用目录的定时同步。以下命令默认 1Panel 安装在 `/opt`；如果安装位置不同，只需修改 `PANEL_BASE_DIR`：
 
-```shell
-# 先清理可能残留的临时目录, 避免上次 clone 中断后任务永久失败
-rm -rf /opt/1panel/resource/apps/local/1panel-appstore-tmp
-git clone --depth 1 https://github.com/zhengkh/1panel-appstore /opt/1panel/resource/apps/local/1panel-appstore-tmp || exit 1
-cp -rf /opt/1panel/resource/apps/local/1panel-appstore-tmp/apps/* /opt/1panel/resource/apps/local/
-rm -rf /opt/1panel/resource/apps/local/1panel-appstore-tmp
+```bash
+set -euo pipefail
+
+PANEL_BASE_DIR="/opt"
+
+case "$PANEL_BASE_DIR" in
+  /*) ;;
+  *)
+    echo "PANEL_BASE_DIR 必须是绝对路径" >&2
+    exit 1
+    ;;
+esac
+
+PANEL_BASE_DIR="$(realpath -m -- "$PANEL_BASE_DIR")"
+if [ "$PANEL_BASE_DIR" = "/" ]; then
+  echo "PANEL_BASE_DIR 不能是 /" >&2
+  exit 1
+fi
+
+LOCAL_APPS_DIR="$PANEL_BASE_DIR/1panel/resource/apps/local"
+IMPORT_DIR="$PANEL_BASE_DIR/1panel/resource/apps/1panel-appstore-tmp"
+
+if [ ! -d "$LOCAL_APPS_DIR" ]; then
+  echo "1Panel 本地应用目录不存在: $LOCAL_APPS_DIR" >&2
+  exit 1
+fi
+
+cleanup() {
+  if [ -d "$IMPORT_DIR" ] && [ ! -L "$IMPORT_DIR" ]; then
+    find "$IMPORT_DIR" -xdev -mindepth 1 -delete
+    rmdir "$IMPORT_DIR"
+  fi
+}
+
+if [ -e "$IMPORT_DIR" ] || [ -L "$IMPORT_DIR" ]; then
+  if [ -L "$IMPORT_DIR" ] || [ ! -d "$IMPORT_DIR" ]; then
+    echo "临时路径不是普通目录, 请手动检查: $IMPORT_DIR" >&2
+    exit 1
+  fi
+  cleanup
+fi
+
+trap cleanup EXIT
+git clone --depth 1 https://github.com/zhengkanghua/1panel-appstore.git "$IMPORT_DIR"
+cp -a "$IMPORT_DIR/apps/." "$LOCAL_APPS_DIR/"
 ```
 
 首次可手动执行一次该任务，然后在 1Panel「应用商店 → 本地应用」中点击**更新应用列表**，即可看到本仓库的应用，直接点安装。安装时 1Panel 会自动：按表单生成 `.env` → 执行 `scripts/init.sh`（初始化数据目录与权限）→ `docker compose up`，无需登录服务器手动操作。

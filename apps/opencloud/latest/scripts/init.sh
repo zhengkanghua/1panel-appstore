@@ -1,19 +1,65 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-# OpenCloud 容器以 1000:1000 运行, 预创建配置/数据目录并修正属主,
-# 否则首次启动时 opencloud init 无法写入配置而反复重启
+# OpenCloud runs as 1000:1000. Create writable mount points before the first
+# container start without sourcing untrusted dotenv values or recursively
+# changing ownership of an arbitrary host path.
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+ENV_FILE="${ENV_FILE:-${ROOT_DIR}/.env}"
 
-# 从 1Panel 按安装表单生成的 .env 中读取目录变量, 以支持用户自定义路径
-# 不直接 source 整个 .env: 密码等字段可能含 $、反引号等会被 shell 展开的字符
+fail() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
 env_get() {
-    sed -n "s/^$1=//p" .env 2>/dev/null | tail -n 1 | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//"
+    local key="$1"
+    local value=""
+
+    if [[ -f "$ENV_FILE" ]]; then
+        value="$(grep -E "^${key}=" "$ENV_FILE" | tail -n 1 | cut -d '=' -f 2- || true)"
+    fi
+    if [[ ${#value} -ge 2 && "${value:0:1}" == '"' && "${value: -1}" == '"' ]]; then
+        value="${value:1:${#value}-2}"
+    elif [[ ${#value} -ge 2 && "${value:0:1}" == "'" && "${value: -1}" == "'" ]]; then
+        value="${value:1:${#value}-2}"
+    fi
+    printf '%s\n' "$value"
+}
+
+prepare_dir() {
+    local raw_path="$1"
+    local absolute_path=""
+
+    [[ -n "$raw_path" ]] || fail "OpenCloud data path must not be empty"
+    case "$raw_path" in
+        *$'\n'* | *$'\r'* | *'$'* | *'#'*) fail "Unsupported character in OpenCloud data path: $raw_path" ;;
+    esac
+
+    case "$raw_path" in
+        /*) absolute_path="$(realpath -m -- "$raw_path")" ;;
+        *)
+            absolute_path="$(realpath -m -- "${ROOT_DIR}/${raw_path#./}")"
+            case "$absolute_path" in
+                "$ROOT_DIR"/*) ;;
+                *) fail "Relative OpenCloud data path must stay inside the application directory: $raw_path" ;;
+            esac
+            ;;
+    esac
+
+    [[ "$absolute_path" != "/" ]] || fail "OpenCloud data path must not be the filesystem root"
+    [[ ! -L "$absolute_path" ]] || fail "OpenCloud data path must not be a symbolic link: $absolute_path"
+    if [[ -e "$absolute_path" && ! -d "$absolute_path" ]]; then
+        fail "OpenCloud data path must be a directory: $absolute_path"
+    fi
+
+    mkdir -p -- "$absolute_path"
+    chown 1000:1000 -- "$absolute_path"
 }
 
 OC_CONFIG_DIR="$(env_get OC_CONFIG_DIR)"
 OC_DATA_DIR="$(env_get OC_DATA_DIR)"
-OC_APPS_DIR="$(env_get OC_APPS_DIR)"
 
-for dir in "${OC_CONFIG_DIR:-./data/config}" "${OC_DATA_DIR:-./data/storage}" "${OC_APPS_DIR:-./data/apps}"; do
-    mkdir -p "$dir"
-    chown -R 1000:1000 "$dir"
-done
+prepare_dir "${OC_CONFIG_DIR:-./data/config}"
+prepare_dir "${OC_DATA_DIR:-./data/storage}"
+prepare_dir "./data/apps"

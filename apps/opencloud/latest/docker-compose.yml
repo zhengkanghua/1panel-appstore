@@ -2,7 +2,7 @@ services:
   opencloud:
     image: opencloudeu/opencloud:latest
     container_name: ${CONTAINER_NAME}
-    user: ${OC_CONTAINER_UID_GID:-1000:1000}
+    user: "1000:1000"
     restart: always
     networks:
       - 1panel-network
@@ -15,7 +15,7 @@ services:
     # therefore we ignore the error and then start the opencloud server
     command:
       - "-c"
-      - "opencloud init || true; opencloud server"
+      - "opencloud init || true; exec opencloud server"
     environment:
       # external access URL, must be https and match the browser address
       OC_URL: ${OC_URL:-https://localhost:9200}
@@ -27,51 +27,41 @@ services:
       # needed if OpenCloud / reverse proxy is using self-signed certificates
       OC_INSECURE: "${INSECURE:-true}"
       # enable services that are not started automatically
-      OC_ADD_RUN_SERVICES: ${START_ADDITIONAL_SERVICES:-}
-      OC_LOG_LEVEL: ${LOG_LEVEL:-info}
-      OC_LOG_COLOR: "${LOG_PRETTY:-false}"
-      OC_LOG_PRETTY: "${LOG_PRETTY:-false}"
+      OC_ADD_RUN_SERVICES: ""
+      OC_LOG_LEVEL: info
+      OC_LOG_COLOR: "false"
+      OC_LOG_PRETTY: "false"
       # basic auth (not recommended, but needed for eg. WebDAV clients that do not support OpenID Connect)
       PROXY_ENABLE_BASIC_AUTH: "${PROXY_ENABLE_BASIC_AUTH:-false}"
-      # demo users
-      IDM_CREATE_DEMO_USERS: "${DEMO_USERS:-false}"
+      IDM_CREATE_DEMO_USERS: "false"
       # admin password, only effective on the very first start
       IDM_ADMIN_PASSWORD: "${INITIAL_ADMIN_PASSWORD}"
-      # email server (if configured)
-      NOTIFICATIONS_SMTP_HOST: "${SMTP_HOST:-}"
-      NOTIFICATIONS_SMTP_PORT: "${SMTP_PORT:-}"
-      NOTIFICATIONS_SMTP_SENDER: "${SMTP_SENDER:-OpenCloud Notifications <notifications@cloud.opencloud.test>}"
-      NOTIFICATIONS_SMTP_USERNAME: "${SMTP_USERNAME:-}"
-      NOTIFICATIONS_SMTP_PASSWORD: "${SMTP_PASSWORD:-}"
-      NOTIFICATIONS_SMTP_INSECURE: "${SMTP_INSECURE:-false}"
-      NOTIFICATIONS_SMTP_AUTHENTICATION: "${SMTP_AUTHENTICATION:-}"
-      NOTIFICATIONS_SMTP_ENCRYPTION: "${SMTP_TRANSPORT_ENCRYPTION:-none}"
       FRONTEND_ARCHIVER_MAX_SIZE: "10000000000"
-      FRONTEND_CHECK_FOR_UPDATES: "${CHECK_FOR_UPDATES:-true}"
+      FRONTEND_CHECK_FOR_UPDATES: "true"
       PROXY_CSP_CONFIG_FILE_LOCATION: /etc/opencloud/csp.yaml
       # enable to allow using the banned passwords list
       OC_PASSWORD_POLICY_BANNED_PASSWORDS_LIST: banned-password-list.txt
       # control the password enforcement and policy for public shares
-      OC_SHARING_PUBLIC_SHARE_MUST_HAVE_PASSWORD: "${OC_SHARING_PUBLIC_SHARE_MUST_HAVE_PASSWORD:-true}"
-      OC_SHARING_PUBLIC_WRITEABLE_SHARE_MUST_HAVE_PASSWORD: "${OC_SHARING_PUBLIC_WRITEABLE_SHARE_MUST_HAVE_PASSWORD:-false}"
-      OC_PASSWORD_POLICY_DISABLED: "${OC_PASSWORD_POLICY_DISABLED:-false}"
-      OC_PASSWORD_POLICY_MIN_CHARACTERS: "${OC_PASSWORD_POLICY_MIN_CHARACTERS:-8}"
-      OC_PASSWORD_POLICY_MIN_LOWERCASE_CHARACTERS: "${OC_PASSWORD_POLICY_MIN_LOWERCASE_CHARACTERS:-1}"
-      OC_PASSWORD_POLICY_MIN_UPPERCASE_CHARACTERS: "${OC_PASSWORD_POLICY_MIN_UPPERCASE_CHARACTERS:-1}"
-      OC_PASSWORD_POLICY_MIN_DIGITS: "${OC_PASSWORD_POLICY_MIN_DIGITS:-1}"
-      OC_PASSWORD_POLICY_MIN_SPECIAL_CHARACTERS: "${OC_PASSWORD_POLICY_MIN_SPECIAL_CHARACTERS:-1}"
+      OC_SHARING_PUBLIC_SHARE_MUST_HAVE_PASSWORD: "true"
+      OC_SHARING_PUBLIC_WRITEABLE_SHARE_MUST_HAVE_PASSWORD: "false"
+      OC_PASSWORD_POLICY_DISABLED: "false"
+      OC_PASSWORD_POLICY_MIN_CHARACTERS: "8"
+      OC_PASSWORD_POLICY_MIN_LOWERCASE_CHARACTERS: "1"
+      OC_PASSWORD_POLICY_MIN_UPPERCASE_CHARACTERS: "1"
+      OC_PASSWORD_POLICY_MIN_DIGITS: "1"
+      OC_PASSWORD_POLICY_MIN_SPECIAL_CHARACTERS: "1"
       # default language for services/WebUI (ISO 639-1, e.g. de, en, fr)
       OC_DEFAULT_LANGUAGE: ${DEFAULT_LANGUAGE:-en}
       TZ: ${TIME_ZONE:-Asia/Shanghai}
     volumes:
-      - ./init/csp.yaml:/etc/opencloud/csp.yaml
-      - ./init/banned-password-list.txt:/etc/opencloud/banned-password-list.txt
+      - ./init/csp.yaml:/etc/opencloud/csp.yaml:ro
+      - ./init/banned-password-list.txt:/etc/opencloud/banned-password-list.txt:ro
       - ${OC_CONFIG_DIR:-./data/config}:/etc/opencloud
       - ${OC_DATA_DIR:-./data/storage}:/var/lib/opencloud
       # OpenCloud Web can load extensions from this directory
-      - ${OC_APPS_DIR:-./data/apps}:/var/lib/opencloud/web/assets/apps
+      - ./data/apps:/var/lib/opencloud/web/assets/apps
     logging:
-      driver: ${LOG_DRIVER:-local}
+      driver: local
     labels:
       createdBy: "Apps"
 
