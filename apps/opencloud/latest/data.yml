@@ -100,11 +100,11 @@ additionalProperties:
     - default: "1000:1000"
       edit: false
       envKey: OC_CONTAINER_UID_GID
-      labelEn: Container UID:GID (data directories use this owner)
-      labelZh: 容器 UID:GID（数据目录将使用此属主）
+      labelEn: Container UID:GID (set before installation)
+      labelZh: 容器 UID:GID（仅安装前设置）
       label:
-        en: 'Container UID:GID (data directories use this owner)'
-        zh: '容器 UID:GID（数据目录将使用此属主）'
+        en: 'Container UID:GID (set before installation)'
+        zh: '容器 UID:GID（仅安装前设置）'
       description:
         en: 'Official default is 1000:1000. Change only before installation when the storage filesystem requires another numeric owner.'
         zh: '官方默认值为 1000:1000。仅在存储文件系统要求其他数字属主时于安装前修改。'
@@ -113,11 +113,11 @@ additionalProperties:
     - default: ./data/config
       edit: false
       envKey: OC_CONFIG_DIR
-      labelEn: Config folder path
-      labelZh: 配置文件夹路径
+      labelEn: Config folder path (set before installation)
+      labelZh: 配置文件夹路径（仅安装前设置）
       label:
-        en: 'Config folder path'
-        zh: '配置文件夹路径'
+        en: 'Config folder path (set before installation)'
+        zh: '配置文件夹路径（仅安装前设置）'
       description:
         en: 'Stores generated configuration and secrets. Back it up together with the data directory.'
         zh: '保存自动生成的配置和密钥，必须与数据目录一起备份。'
@@ -126,11 +126,11 @@ additionalProperties:
     - default: ./data/storage
       edit: false
       envKey: OC_DATA_DIR
-      labelEn: Data folder path
-      labelZh: 数据文件夹路径
+      labelEn: Data folder path (set before installation)
+      labelZh: 数据文件夹路径（仅安装前设置）
       label:
-        en: 'Data folder path'
-        zh: '数据文件夹路径'
+        en: 'Data folder path (set before installation)'
+        zh: '数据文件夹路径（仅安装前设置）'
       description:
         en: 'Stores user files and can grow large. Use persistent storage with sufficient capacity.'
         zh: '保存用户文件且容量会持续增长，请选择空间充足的持久化存储。'
@@ -139,11 +139,11 @@ additionalProperties:
     - default: ./data/apps
       edit: false
       envKey: OC_APPS_DIR
-      labelEn: Web extensions folder path
-      labelZh: Web 扩展文件夹路径
+      labelEn: Web extensions folder path (set before installation)
+      labelZh: Web 扩展文件夹路径（仅安装前设置）
       label:
-        en: 'Web extensions folder path'
-        zh: 'Web 扩展文件夹路径'
+        en: 'Web extensions folder path (set before installation)'
+        zh: 'Web 扩展文件夹路径（仅安装前设置）'
       description:
         en: 'Local OpenCloud Web extensions are loaded from this directory after a container restart.'
         zh: '本地 OpenCloud Web 扩展存放目录，放入扩展后需重启容器加载。'
@@ -152,11 +152,11 @@ additionalProperties:
     - default: decomposed
       edit: false
       envKey: STORAGE_USERS_DRIVER
-      labelEn: Primary User Storage
-      labelZh: 用户文件主存储
+      labelEn: Primary User Storage (choose before first start)
+      labelZh: 用户文件主存储（首次启动前选择）
       label:
-        en: 'Primary User Storage'
-        zh: '用户文件主存储'
+        en: 'Primary User Storage (choose before first start)'
+        zh: '用户文件主存储（首次启动前选择）'
       description:
         en: 'Local storage uses the data directory. External S3 follows the official decomposeds3 configuration and must be selected before first start. This setting does not migrate existing data.'
         zh: '本地存储使用数据目录；外部 S3 严格采用官方 decomposeds3 配置，必须在首次启动前选择。修改此项不会迁移已有数据。'
@@ -170,11 +170,11 @@ additionalProperties:
     - default: ""
       edit: false
       envKey: DECOMPOSEDS3_ENDPOINT
-      labelEn: S3 Endpoint
-      labelZh: S3 端点
+      labelEn: S3 Endpoint (External S3 only; include http(s)://; set before installation)
+      labelZh: S3 端点（仅外部 S3；须含 http(s)://；仅安装前设置）
       label:
-        en: 'S3 Endpoint'
-        zh: 'S3 端点'
+        en: 'S3 Endpoint (External S3 only; include http(s)://; set before installation)'
+        zh: 'S3 端点（仅外部 S3；须含 http(s)://；仅安装前设置）'
       description:
         en: 'Required for External S3, for example https://s3.example.com. For a self-signed endpoint, also enable Skip TLS Certificate Verification.'
         zh: '选择外部 S3 时必填，例如 https://s3.example.com。S3 使用自签名证书时还需启用“跳过 TLS 证书验证”。'
@@ -183,57 +183,63 @@ additionalProperties:
     - default: default
       edit: false
       envKey: DECOMPOSEDS3_REGION
-      labelEn: S3 Region
-      labelZh: S3 区域
+      labelEn: 'S3 Region (External S3 only; R2: auto; set before installation)'
+      labelZh: 'S3 区域（仅外部 S3；R2 填 auto；仅安装前设置）'
       label:
-        en: 'S3 Region'
-        zh: 'S3 区域'
+        en: 'S3 Region (External S3 only; R2: auto; set before installation)'
+        zh: 'S3 区域（仅外部 S3；R2 填 auto；仅安装前设置）'
       description:
         en: 'Region expected by the S3 provider. Keep default for providers that do not require a specific region.'
         zh: '填写 S3 服务商要求的区域；服务商不要求特定区域时保持 default。'
       required: true
       type: text
     - default: ""
-      edit: false
+      edit: true
       envKey: DECOMPOSEDS3_ACCESS_KEY
-      labelEn: S3 Access Key
-      labelZh: S3 Access Key
+      labelEn: S3 Access Key (External S3 only)
+      labelZh: S3 Access Key（仅外部 S3）
       label:
-        en: 'S3 Access Key'
-        zh: 'S3 Access Key'
+        en: 'S3 Access Key (External S3 only)'
+        zh: 'S3 Access Key（仅外部 S3）'
+      description:
+        en: 'Can be updated after installation when rotating credentials for the same endpoint and bucket.'
+        zh: '同一端点和存储桶轮换凭据时，可在安装后修改。'
       required: false
       type: text
     - default: ""
-      edit: false
+      edit: true
       envKey: DECOMPOSEDS3_SECRET_KEY
-      labelEn: S3 Secret Key
-      labelZh: S3 Secret Key
+      labelEn: S3 Secret Key (External S3 only)
+      labelZh: S3 Secret Key（仅外部 S3）
       label:
-        en: 'S3 Secret Key'
-        zh: 'S3 Secret Key'
+        en: 'S3 Secret Key (External S3 only)'
+        zh: 'S3 Secret Key（仅外部 S3）'
+      description:
+        en: 'Can be updated after installation when rotating credentials for the same endpoint and bucket.'
+        zh: '同一端点和存储桶轮换凭据时，可在安装后修改。'
       required: false
       type: password
     - default: ""
       edit: false
       envKey: DECOMPOSEDS3_BUCKET
-      labelEn: S3 Bucket
-      labelZh: S3 存储桶
+      labelEn: S3 Bucket (External S3 only; set before installation)
+      labelZh: S3 存储桶（仅外部 S3；仅安装前设置）
       label:
-        en: 'S3 Bucket'
-        zh: 'S3 存储桶'
+        en: 'S3 Bucket (External S3 only; set before installation)'
+        zh: 'S3 存储桶（仅外部 S3；仅安装前设置）'
       description:
         en: 'Required for External S3. Create the bucket and grant the access key permission before installing OpenCloud.'
         zh: '选择外部 S3 时必填。安装 OpenCloud 前请先创建存储桶，并为 Access Key 授予访问权限。'
       required: false
       type: text
     - default: 5
-      edit: false
+      edit: true
       envKey: DECOMPOSEDS3_EVENTS_NUM_CONSUMERS
-      labelEn: S3 Event Consumers
-      labelZh: S3 事件消费者数量
+      labelEn: S3 Event Consumers (External S3 only; default 5)
+      labelZh: S3 事件消费者数量（仅外部 S3；默认 5）
       label:
-        en: 'S3 Event Consumers'
-        zh: 'S3 事件消费者数量'
+        en: 'S3 Event Consumers (External S3 only; default 5)'
+        zh: 'S3 事件消费者数量（仅外部 S3；默认 5）'
       description:
         en: 'Official default is 5. Increase only for a tested high-throughput deployment.'
         zh: '官方默认值为 5，仅在经过验证的高吞吐部署中调整。'
@@ -260,13 +266,13 @@ additionalProperties:
       required: true
       type: text
     - default: "false"
-      edit: true
+      edit: false
       envKey: DEMO_USERS
-      labelEn: Create demo users (public passwords; never enable in production)
-      labelZh: 创建演示用户（密码公开，生产环境禁止启用）
+      labelEn: Create demo users (first start only; never use in production)
+      labelZh: 创建演示用户（仅首次启动；生产环境禁止启用）
       label:
-        en: 'Create demo users (public passwords; never enable in production)'
-        zh: '创建演示用户（密码公开，生产环境禁止启用）'
+        en: 'Create demo users (first start only; never use in production)'
+        zh: '创建演示用户（仅首次启动；生产环境禁止启用）'
       description:
         en: 'Creates alan, mary, margaret, dennis and lynn with the public password demo. Never enable on a production instance.'
         zh: '会创建 alan、mary、margaret、dennis、lynn，密码均为公开的 demo。生产环境禁止启用。'
@@ -405,22 +411,22 @@ additionalProperties:
     - default: 587
       edit: true
       envKey: SMTP_PORT
-      labelEn: SMTP Port
-      labelZh: SMTP 端口
+      labelEn: SMTP Port (notifications only)
+      labelZh: SMTP 端口（仅邮件通知）
       label:
-        en: 'SMTP Port'
-        zh: 'SMTP 端口'
+        en: 'SMTP Port (notifications only)'
+        zh: 'SMTP 端口（仅邮件通知）'
       required: true
       rule: paramPort
       type: number
     - default: ""
       edit: true
       envKey: SMTP_SENDER
-      labelEn: SMTP Sender (for example OpenCloud <no-reply@example.com>)
-      labelZh: SMTP 发件人（例如 OpenCloud <no-reply@example.com>）
+      labelEn: SMTP Sender (notifications only)
+      labelZh: SMTP 发件人（仅邮件通知）
       label:
-        en: 'SMTP Sender (for example OpenCloud <no-reply@example.com>)'
-        zh: 'SMTP 发件人（例如 OpenCloud <no-reply@example.com>）'
+        en: 'SMTP Sender (notifications only)'
+        zh: 'SMTP 发件人（仅邮件通知）'
       description:
         en: 'Use a sender accepted by the SMTP server, for example OpenCloud <no-reply@example.com>.'
         zh: '填写 SMTP 服务器允许的发件人，例如 OpenCloud <no-reply@example.com>。'
@@ -429,31 +435,31 @@ additionalProperties:
     - default: ""
       edit: true
       envKey: SMTP_USERNAME
-      labelEn: SMTP Username
-      labelZh: SMTP 用户名
+      labelEn: SMTP Username (notifications only)
+      labelZh: SMTP 用户名（仅邮件通知）
       label:
-        en: 'SMTP Username'
-        zh: 'SMTP 用户名'
+        en: 'SMTP Username (notifications only)'
+        zh: 'SMTP 用户名（仅邮件通知）'
       required: false
       type: text
     - default: ""
       edit: true
       envKey: SMTP_PASSWORD
-      labelEn: SMTP Password
-      labelZh: SMTP 密码
+      labelEn: SMTP Password (notifications only)
+      labelZh: SMTP 密码（仅邮件通知）
       label:
-        en: 'SMTP Password'
-        zh: 'SMTP 密码'
+        en: 'SMTP Password (notifications only)'
+        zh: 'SMTP 密码（仅邮件通知）'
       required: false
       type: password
     - default: auto
       edit: true
       envKey: SMTP_AUTHENTICATION
-      labelEn: SMTP Authentication
-      labelZh: SMTP 认证方式
+      labelEn: SMTP Authentication (notifications only)
+      labelZh: SMTP 认证方式（仅邮件通知）
       label:
-        en: 'SMTP Authentication'
-        zh: 'SMTP 认证方式'
+        en: 'SMTP Authentication (notifications only)'
+        zh: 'SMTP 认证方式（仅邮件通知）'
       required: true
       type: select
       values:
@@ -470,11 +476,11 @@ additionalProperties:
     - default: none
       edit: true
       envKey: SMTP_TRANSPORT_ENCRYPTION
-      labelEn: SMTP Transport Encryption
-      labelZh: SMTP 传输加密
+      labelEn: SMTP Transport Encryption (notifications only)
+      labelZh: SMTP 传输加密（仅邮件通知）
       label:
-        en: 'SMTP Transport Encryption'
-        zh: 'SMTP 传输加密'
+        en: 'SMTP Transport Encryption (notifications only)'
+        zh: 'SMTP 传输加密（仅邮件通知）'
       description:
         en: 'Use starttls for explicit TLS, ssltls for implicit TLS, or none only when required by the SMTP server.'
         zh: '显式 TLS 选 starttls，隐式 TLS 选 ssltls；仅 SMTP 服务器明确要求时选择 none。'
@@ -490,11 +496,11 @@ additionalProperties:
     - default: "false"
       edit: true
       envKey: SMTP_INSECURE
-      labelEn: Allow insecure SMTP connection
-      labelZh: 允许不安全的 SMTP 连接
+      labelEn: Allow insecure SMTP connection (notifications only)
+      labelZh: 允许不安全的 SMTP 连接（仅邮件通知）
       label:
-        en: 'Allow insecure SMTP connection'
-        zh: '允许不安全的 SMTP 连接'
+        en: 'Allow insecure SMTP connection (notifications only)'
+        zh: '允许不安全的 SMTP 连接（仅邮件通知）'
       description:
         en: 'Disables SMTP TLS certificate verification. Keep disabled unless the SMTP server uses a self-signed certificate.'
         zh: '关闭 SMTP TLS 证书验证。除非 SMTP 服务器使用自签名证书，否则保持禁用。'
