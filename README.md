@@ -8,7 +8,7 @@
 
 | 应用 | 说明 | 版本 |
 | --- | --- | --- |
-| [OpenCloud](apps/opencloud/README.md) | 开源文件管理、共享与协作平台（oCIS 欧洲社区分支） | 7.2.2 / latest |
+| [OpenCloud](apps/opencloud/README.md) | 开源文件管理、共享与协作平台（oCIS 欧洲社区分支） | 7.2.2 / 7.3.0 / latest |
 
 ## 使用方式（标准流程）
 

@@ -1,6 +1,6 @@
 services:
   opencloud:
-    # Keep latest reproducible and aligned with the current official Compose release.
+    # OpenCloud 7.3.0 is currently published on the official rolling image line.
     image: opencloudeu/opencloud-rolling:7.3.0
     container_name: ${CONTAINER_NAME}
     user: "${OC_CONTAINER_UID_GID:-1000:1000}"

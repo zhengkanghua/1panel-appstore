@@ -6,22 +6,23 @@
 
 | 上游 | 变化频率 | 对应工作 |
 | --- | --- | --- |
-| Docker 镜像（[opencloudeu/opencloud](https://hub.docker.com/r/opencloudeu/opencloud/tags)） | 高（每月数次） | 新建版本目录、改镜像 tag —— 例行操作 |
+| Docker 镜像（[production](https://hub.docker.com/r/opencloudeu/opencloud/tags) / [rolling](https://hub.docker.com/r/opencloudeu/opencloud-rolling/tags)） | 高（每月数次） | 新建版本目录、核对镜像发布线和 tag |
 | 官方 compose 配置仓库（[opencloud-compose](https://github.com/opencloud-eu/opencloud-compose)） | 低（大版本前后） | 对照 diff 同步配置 —— 需要人工判断 |
 
-> **注意区分两条镜像发布线**：上游 compose 仓库里默认镜像是 `opencloudeu/opencloud-rolling`（滚动发布线，如 7.3.0），而本仓库**有意**跟踪生产发布线 `opencloudeu/opencloud`（如 7.2.2）。两者只是镜像仓库不同，compose 配置仓库是共用的。升级时只看 `opencloudeu/opencloud` 的新 tag，不要因为上游 compose 里出现 rolling 的新版本号就直接换 tag。
+> **注意区分两条镜像发布线**：`opencloudeu/opencloud` 是生产发布线，`opencloudeu/opencloud-rolling` 是滚动发布线。优先使用生产线；只有在 GitHub 已有同版本正式 tag、官方 compose 固定使用该 rolling tag、且生产仓库确实没有对应 tag 时，才可发布 rolling 版本，并必须在应用 README 中明确说明。禁止构造不存在的生产镜像 tag。
 
 每个应用目录下的 `.upstream` 文件记录了上次同步时上游仓库的 commit，是判断"上游有没有 diff"的基准点。
 
 ## 第一步：发现新版本
 
-查询镜像最新的稳定 tag：
+分别查询两个官方镜像仓库的 tag：
 
 ```bash
 curl -s "https://hub.docker.com/v2/repositories/opencloudeu/opencloud/tags?page_size=10&ordering=last_updated" | python3 -c "import json,sys; [print(t['name'], t['last_updated'][:10]) for t in json.load(sys.stdin)['results']]"
+curl -s "https://hub.docker.com/v2/repositories/opencloudeu/opencloud-rolling/tags?page_size=10&ordering=last_updated" | python3 -c "import json,sys; [print(t['name'], t['last_updated'][:10]) for t in json.load(sys.stdin)['results']]"
 ```
 
-取最新的完整语义化版本号（如 `7.3.0`），忽略 `latest`、`7`、`7.3` 这类浮动 tag 和 `-beta`/`-rc` 预发布版本。
+取完整语义化版本号，忽略 `latest`、`7`、`7.3` 这类浮动 tag 和 `-beta`/`-rc` 预发布版本。再核对 OpenCloud GitHub tag 与官方 compose 当前固定版本，记录最终使用 production 还是 rolling 镜像。
 
 ## 第二步：判断上游 compose 仓库是否有 diff
 
@@ -32,14 +33,14 @@ cd /tmp/oc-compose
 # LAST 取自本仓库 apps/opencloud/.upstream 的 last_synced_commit
 LAST=8d2d89f283faa410bc9ed9f63e8247f6518d5c43
 
-git diff --stat $LAST..HEAD -- docker-compose.yml .env.example external-proxy/opencloud.yml config/opencloud/
+git diff --stat $LAST..HEAD -- docker-compose.yml .env.example external-proxy/opencloud.yml storage/decomposeds3.yml config/opencloud/
 ```
 
 只需要关注 `.upstream` 中 `watched_files` 列出的文件。diff 为空走情况 A，不为空走情况 B。
 
 ## 情况 A：上游无 diff（常态，约 2 分钟）
 
-只是镜像出了新版本，配置接口没变。以 `7.2.2 → 7.3.0` 为例：
+只是镜像出了新版本，配置接口没变。以下以新建版本目录为例：
 
 ```bash
 cd apps/opencloud
@@ -47,12 +48,13 @@ cd apps/opencloud
 # 1. 复制版本目录
 cp -r 7.2.2 7.3.0
 
-# 2. 改镜像 tag（新版本目录内，只此一行）
-sed -i 's/opencloud:7.2.2/opencloud:7.3.0/' 7.3.0/docker-compose.yml
+# 2. 改成上一步确认存在的官方镜像和固定 tag
+sed -i 's#opencloudeu/opencloud:7.2.2#opencloudeu/opencloud-rolling:7.3.0#' 7.3.0/docker-compose.yml
 ```
 
 3. 更新根 `README.md` 应用列表中的版本号；
-4. 顺手更新 `.upstream` 的 `last_synced_commit` 为刚才 `/tmp/oc-compose` 的 `git rev-parse HEAD`（虽然无 diff，但推进基准点能让下次 diff 范围更小）。
+4. 更新应用 README 的版本发布线说明；
+5. 顺手更新 `.upstream` 的 `last_synced_commit` 为刚才 `/tmp/oc-compose` 的 `git rev-parse HEAD`（虽然无 diff，但推进基准点能让下次 diff 范围更小）。
 
 然后跳到[第三步：校验](#第三步校验)。
 
@@ -64,6 +66,7 @@ sed -i 's/opencloud:7.2.2/opencloud:7.3.0/' 7.3.0/docker-compose.yml
 | --- | --- | --- |
 | `docker-compose.yml` 环境变量增/删/改名 | `<新版本>/docker-compose.yml` | 同步变量名和默认值；注意我们比上游多了 1Panel 约定（`1panel-network`、`container_name`、端口映射、`PROXY_TLS`/`OC_URL` 直连模式），这些要保留 |
 | `docker-compose.yml` 挂载路径 / 入口命令变化 | `<新版本>/docker-compose.yml` | 同步；上游 `./config/opencloud/...` 路径对应本仓库 `./init/...` |
+| `storage/decomposeds3.yml` 环境变量变化 | `<新版本>/docker-compose.yml` + `data.yml` | 同步 S3 驱动变量、安装表单和首次启动校验 |
 | `.env.example` 新增配置项 | `<新版本>/.env.sample` | 补进样例并写中文注释；若是普通用户安装时就该决定的选项，再加入 `<新版本>/data.yml` 的 formFields（带多语言 label） |
 | `config/opencloud/csp.yaml` 变化 | `<新版本>/init/csp.yaml` | 直接整文件覆盖 |
 | `config/opencloud/banned-password-list.txt` 变化 | `<新版本>/init/banned-password-list.txt` | 直接整文件覆盖 |
